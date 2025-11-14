@@ -601,11 +601,11 @@ CHAINSAW ?= $(LOCALBIN)/chainsaw
 GOTESTSUM ?= $(LOCALBIN)/gotestsum
 
 # renovate: datasource=go depName=sigs.k8s.io/kustomize/kustomize/v5
-KUSTOMIZE_VERSION ?= v5.7.1
+KUSTOMIZE_VERSION ?= v5.8.0
 # renovate: datasource=go depName=sigs.k8s.io/controller-tools/cmd/controller-gen
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 # renovate: datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION ?= v2.6.0
+GOLANGCI_LINT_VERSION ?= v2.6.1
 # renovate: datasource=go depName=sigs.k8s.io/kind
 KIND_VERSION ?= v0.30.0
 # renovate: datasource=go depName=github.com/kyverno/chainsaw
@@ -746,7 +746,11 @@ api-docs: crdoc kustomize
 	for crdmanifest in $$TMP_DIR/*; do \
 	  filename="$$(basename -s .opentelemetry.io.yaml $$crdmanifest)" ;\
 	  filename="$${filename#apiextensions.k8s.io_v1_customresourcedefinition_}" ;\
-	  $(CRDOC) --resources $$crdmanifest --output docs/api/$$filename.md ;\
+	  if [ "$$filename" = "clusterobservabilities" ]; then \
+	    echo "Skipping API documentation generation for clusterobservabilities (internal alpha API)" ;\
+	  else \
+	    $(CRDOC) --resources $$crdmanifest --output docs/api/$$filename.md ;\
+	  fi ;\
 	done;\
 	}
 

@@ -24,9 +24,6 @@ const (
 	// Collector name suffixes.
 	AgentCollectorSuffix   = "agent"
 	ClusterCollectorSuffix = "cluster"
-
-	// Default instrumentation name for managed namespaces.
-	DefaultInstrumentationName = "default-instrumentation"
 )
 
 // getCollectorImage returns a sensible default collector image when build-time version is not set.
@@ -91,7 +88,6 @@ func buildAgentCollector(params manifests.Params) (*v1beta1.OpenTelemetryCollect
 	collectorConfig, err := configLoader.LoadCollectorConfig(
 		config.AgentCollectorType,
 		distroProvider,
-		co.Spec.Signals,
 		co.Spec,
 	)
 	if err != nil {
@@ -305,7 +301,6 @@ func buildClusterCollector(params manifests.Params) (*v1beta1.OpenTelemetryColle
 	collectorConfig, err := configLoader.LoadCollectorConfig(
 		config.ClusterCollectorType,
 		distroProvider,
-		co.Spec.Signals,
 		co.Spec,
 	)
 	if err != nil {
@@ -380,14 +375,14 @@ func buildInstrumentations(params manifests.Params) ([]client.Object, error) {
 	}
 
 	// Create a single Instrumentation in the same namespace as the ClusterObservability resource
-	instrumentationLabels := manifestutils.Labels(co.ObjectMeta, DefaultInstrumentationName, "", ComponentClusterObservability, params.Config.LabelsFilter)
+	instrumentationLabels := manifestutils.Labels(co.ObjectMeta, co.Name, "", ComponentClusterObservability, params.Config.LabelsFilter)
 	instrumentationLabels["app.kubernetes.io/managed-by"] = "opentelemetry-operator"
 	instrumentationLabels["app.kubernetes.io/component"] = ComponentClusterObservability
 
 	instrumentation := &v1alpha1.Instrumentation{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      DefaultInstrumentationName,
-			Namespace: co.Namespace, // Same namespace as ClusterObservability
+			Name:      co.Name,
+			Namespace: co.Namespace,
 			Labels:    instrumentationLabels,
 			OwnerReferences: []metav1.OwnerReference{
 				{
