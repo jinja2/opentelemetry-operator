@@ -1,0 +1,12 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Valid CR was accepted and the controller reconciled it.
+apiVersion: opentelemetry.io/v1alpha1
+kind: ClusterObservability
+metadata:
+  name: test-webhook-validation
+status:
+  (conditions[?type == 'Configured']):
+  - status: "True"
+    reason: Configured

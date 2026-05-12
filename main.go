@@ -506,6 +506,12 @@ func main() {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Instrumentation")
 			os.Exit(1)
 		}
+		if featuregate.EnableClusterObservability.IsEnabled() {
+			if err = wh.SetupClusterObservabilityWebhook(mgr); err != nil {
+				setupLog.Error(err, "unable to create webhook", "webhook", "ClusterObservability")
+				os.Exit(1)
+			}
+		}
 		decoder := admission.NewDecoder(mgr.GetScheme())
 		mgr.GetWebhookServer().Register("/mutate-v1-pod", &webhook.Admission{
 			Handler: podmutation.NewWebhookHandler(cfg, ctrl.Log.WithName("pod-webhook"), decoder, mgr.GetClient(),

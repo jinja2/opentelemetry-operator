@@ -1,0 +1,38 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: webhook-validation
+spec:
+  timeouts:
+    apply: 30s
+    assert: 30s
+  steps:
+  - name: reject-missing-endpoint
+    try:
+    - apply:
+        file: 00-invalid-no-endpoint.yaml
+        expect:
+        - check:
+            ($error != null): true
+  - name: reject-empty-exporter
+    try:
+    - apply:
+        file: 01-invalid-empty-exporter.yaml
+        expect:
+        - check:
+            ($error != null): true
+  - name: accept-valid
+    try:
+    - apply:
+        file: 02-valid.yaml
+    - assert:
+        file: 02-assert.yaml
+  - name: cleanup
+    try:
+    - delete:
+        ref:
+          apiVersion: opentelemetry.io/v1alpha1
+          kind: ClusterObservability
+          name: test-webhook-validation

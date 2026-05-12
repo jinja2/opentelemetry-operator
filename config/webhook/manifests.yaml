@@ -115,6 +115,45 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /validate-opentelemetry-io-v1alpha1-clusterobservability
+  failurePolicy: Fail
+  name: vclusterobservabilitycreateupdate.kb.io
+  rules:
+  - apiGroups:
+    - opentelemetry.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - clusterobservabilities
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-opentelemetry-io-v1alpha1-clusterobservability
+  failurePolicy: Ignore
+  name: vclusterobservabilitydelete.kb.io
+  rules:
+  - apiGroups:
+    - opentelemetry.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - DELETE
+    resources:
+    - clusterobservabilities
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /validate-opentelemetry-io-v1alpha1-instrumentation
   failurePolicy: Fail
   name: vinstrumentationcreateupdate.kb.io

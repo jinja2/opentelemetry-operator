@@ -1,0 +1,17 @@
+change_type: enhancement
+
+component: cluster-observability
+
+note: Accept arbitrary OTLP HTTP exporter configuration via AnyConfig
+
+issues: [5078]
+
+subtext: |
+  `ClusterObservability.spec.exporter` is no longer a hand-mirrored typed
+  schema; it is now a `v1beta1.AnyConfig` block passed verbatim to the
+  collector's `otlphttpexporter`. Any field supported by the upstream exporter
+  is immediately usable without an operator release. A new validating webhook
+  enforces that `spec.exporter` is non-empty and defines at least one endpoint
+  key (`endpoint`, `traces_endpoint`, `metrics_endpoint`, `logs_endpoint`, or
+  `profiles_endpoint`); all other field-level validation is delegated to the
+  collector at config-load time.

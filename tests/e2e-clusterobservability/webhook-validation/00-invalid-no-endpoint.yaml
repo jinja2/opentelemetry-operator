@@ -1,0 +1,13 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# spec.exporter has fields but none of them are an endpoint key. The validating
+# webhook must reject this.
+apiVersion: opentelemetry.io/v1alpha1
+kind: ClusterObservability
+metadata:
+  name: test-webhook-validation
+spec:
+  exporter:
+    compression: gzip
+    timeout: "30s"

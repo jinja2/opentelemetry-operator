@@ -139,9 +139,21 @@ ClusterObservability has a simple spec with a single main field:
 
 ```go
 type ClusterObservabilitySpec struct {
-    Exporter OTLPHTTPExporter  // OTLP HTTP exporter configuration
+    // Exporter is the configuration block passed verbatim to the otlphttp
+    // exporter on every collector pipeline. Anything supported by the official
+    // OpenTelemetry Collector otlphttpexporter is accepted; the operator does
+    // not introspect the schema. At minimum, "endpoint" (or one of
+    // traces_endpoint / metrics_endpoint / logs_endpoint / profiles_endpoint)
+    // must be set.
+    Exporter v1beta1.AnyConfig
 }
 ```
+
+> Validation note: the operator's validating webhook only enforces that
+> `spec.exporter` is non-empty and contains at least one endpoint key. All other
+> field-level validation (types, enums, units) is delegated to the collector at
+> config-load time, so any field added to the upstream `otlphttpexporter` is
+> immediately usable without an operator release.
 
 All observability signals (logs, traces, metrics) are enabled by default. The `exporter` field uses the `otlphttp` exporter from OpenTelemetry Collector.
 
