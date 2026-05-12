@@ -401,6 +401,12 @@ e2e: chainsaw
 e2e-sidecar: chainsaw
 	$(CHAINSAW) test --test-dir ./tests/e2e-sidecar --report-name e2e-sidecar $(CHAINSAW_SELECTOR)
 
+# End-to-end tests for ClusterObservability. Run sequentially because
+# ClusterObservability is a singleton (only the oldest active CR reconciles).
+.PHONY: e2e-clusterobservability
+e2e-clusterobservability: chainsaw
+	$(CHAINSAW) test --test-dir ./tests/e2e-clusterobservability --report-name e2e-clusterobservability --parallel 1
+
 # end-to-end-test for testing automatic RBAC creation
 .PHONY: e2e-automatic-rbac
 e2e-automatic-rbac: chainsaw
@@ -619,7 +625,24 @@ container-instrumentation-all: container-instrumentation-java container-instrume
 start-kind: kind
 ifeq (true,$(START_KIND_CLUSTER))
 	$(KIND) create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG) || true
+	@$(MAKE) approve-kubelet-csrs
 endif
+
+# The Kind config sets serverTLSBootstrap=true so the kubelet requests a
+# serving cert from kubernetes.io/kubelet-serving instead of using a
+# self-signed one. The CSR isn't auto-approved, so receivers like
+# kubeletstats can't verify the kubelet's cert with the cluster CA until
+# we approve it here.
+.PHONY: approve-kubelet-csrs
+approve-kubelet-csrs:
+	@for i in 1 2 3 4 5 6 7 8 9 10; do \
+	  csrs=$$(kubectl get csr -o jsonpath='{range .items[?(@.spec.signerName=="kubernetes.io/kubelet-serving")]}{.metadata.name} {.status.conditions[?(@.type=="Approved")].status}{"\n"}{end}' 2>/dev/null | awk '$$2!="True"{print $$1}'); \
+	  if [ -n "$$csrs" ]; then \
+	    echo "$$csrs" | xargs -r kubectl certificate approve; \
+	    break; \
+	  fi; \
+	  echo "waiting for kubelet-serving CSR..."; sleep 2; \
+	done
 
 # Stop kind cluster
 .PHONY: stop-kind

@@ -6,6 +6,8 @@ receivers:
     collection_interval: 10s
     auth_type: serviceAccount
     endpoint: "https://${env:K8S_NODE_NAME}:10250"
+    # OpenShift signs kubelet serving certs with its own CA; mount that
+    # instead of the cluster CA used by the base config.
     ca_file: /etc/kubelet-serving-ca/ca-bundle.crt
     metric_groups:
       - container

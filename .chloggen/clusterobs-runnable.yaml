@@ -1,0 +1,26 @@
+change_type: enhancement
+
+component: cluster-observability
+
+note: Run agent and cluster collectors out-of-the-box on Kubernetes and OpenShift
+
+issues: [5078]
+
+subtext: |
+  Follow-ups to the initial ClusterObservability framework so the generated
+  agent and cluster collectors come up cleanly on stock distributions:
+    * Use the contrib distribution of the configured collector image, since
+      the base configs use contrib-only components (`k8s_cluster`,
+      `kubeletstats`, `k8sattributes`, `filelog` with the `container`
+      operator, `resourcedetection` with `k8snode`).
+    * Add the union of permissions those components need to the operator
+      ClusterRole so the OpenTelemetryCollector controller's automatic-RBAC
+      path can grant them to each generated collector ServiceAccount.
+    * Inject `K8S_NODE_NAME` and `OTEL_NODE_IP` on the agent pod (referenced
+      by the base config and the Instrumentation OTLP endpoint).
+    * Mount the OpenShift `kubelet-serving-ca` only on OpenShift, where the
+      host file exists. The base config verifies the kubelet against the
+      cluster CA from the agent's ServiceAccount token volume; the OpenShift
+      override switches to the OpenShift-specific kubelet-serving-ca.
+    * Use the single `container` filelog operator instead of separate
+      `parser-docker` / `parser-crio` / `parser-containerd` operators.

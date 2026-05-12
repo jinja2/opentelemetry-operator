@@ -99,7 +99,7 @@ metadata:
     categories: Logging & Tracing,Monitoring,Observability
     certified: "false"
     containerImage: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
-    createdAt: "2026-05-08T09:28:09Z"
+    createdAt: "2026-05-13T00:33:21Z"
     description: Provides the OpenTelemetry components, including the Collector
     operators.operatorframework.io/builder: operator-sdk-v1.29.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
@@ -111,6 +111,9 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - kind: ClusterObservability
+      name: clusterobservabilities.opentelemetry.io
+      version: v1alpha1
     - description: Instrumentation is the spec for OpenTelemetry instrumentation.
       displayName: OpenTelemetry Instrumentation
       kind: Instrumentation
@@ -318,7 +321,16 @@ spec:
           - ""
           resources:
           - namespaces
+          - namespaces/status
+          - nodes
+          - nodes/proxy
+          - nodes/spec
+          - nodes/stats
           - pods
+          - pods/status
+          - replicationcontrollers
+          - replicationcontrollers/status
+          - resourcequotas
           - secrets
           verbs:
           - get
@@ -331,7 +343,10 @@ spec:
           - events
           verbs:
           - create
+          - get
+          - list
           - patch
+          - watch
         - apiGroups:
           - apps
           resources:
@@ -378,6 +393,7 @@ spec:
         - apiGroups:
           - batch
           resources:
+          - cronjobs
           - jobs
           verbs:
           - get
@@ -409,6 +425,16 @@ spec:
           verbs:
           - get
           - list
+        - apiGroups:
+          - extensions
+          resources:
+          - daemonsets
+          - deployments
+          - replicasets
+          verbs:
+          - get
+          - list
+          - watch
         - apiGroups:
           - gateway.networking.k8s.io
           resources:
@@ -488,6 +514,27 @@ spec:
           - policy
           resources:
           - poddisruptionbudgets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - quota.openshift.io
+          resources:
+          - clusterresourcequotas
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - clusterrolebindings
+          - clusterroles
           verbs:
           - create
           - delete

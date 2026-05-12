@@ -81,12 +81,25 @@ func NewClusterObservabilityReconciler(params ClusterObservabilityReconcilerPara
 //+kubebuilder:rbac:groups=opentelemetry.io,resources=opentelemetrycollectors,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=opentelemetry.io,resources=instrumentations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
-//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
-//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups="",resources=events,verbs=get;list;watch;create;patch
+//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=get;list;watch;create;patch
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
-//+kubebuilder:rbac:groups=apps,resources=daemonsets,verbs=get;list;watch
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
 //+kubebuilder:rbac:groups=security.openshift.io,resources=securitycontextconstraints,verbs=get;list;watch;create;update;patch;delete
+//
+// Permissions below are required so the OpenTelemetryCollector controller's
+// automatic-RBAC path can grant the union of rules needed by the receivers
+// and processors used in the ClusterObservability base configs: k8s_cluster,
+// k8s_events, kubeletstats, k8sattributes, resourcedetection (k8snode,
+// openshift). RBAC escalation prevention requires the granter to hold what
+// it grants.
+//+kubebuilder:rbac:groups="",resources=events;namespaces;namespaces/status;nodes;nodes/spec;nodes/proxy;nodes/stats;pods;pods/status;replicationcontrollers;replicationcontrollers/status;resourcequotas;services,verbs=get;list;watch
+//+kubebuilder:rbac:groups=apps,resources=daemonsets;deployments;replicasets;statefulsets,verbs=get;list;watch
+//+kubebuilder:rbac:groups=batch,resources=cronjobs;jobs,verbs=get;list;watch
+//+kubebuilder:rbac:groups=extensions,resources=daemonsets;deployments;replicasets,verbs=get;list;watch
+//+kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch
+//+kubebuilder:rbac:groups=quota.openshift.io,resources=clusterresourcequotas,verbs=get;list;watch
+//+kubebuilder:rbac:groups=config.openshift.io,resources=infrastructures;infrastructures/status,verbs=get;list;watch
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles;clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
